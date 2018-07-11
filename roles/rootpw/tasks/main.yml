@@ -1,0 +1,34 @@
+
+ - name: check root password
+   shell: "grep root /etc/shadow | cut -f2 -d ':'"
+   register: tehpassword
+
+ - name: print output
+   debug: msg="{{ tehpassword.stdout }}"
+   failed_when: item != '{{ initial_sha512 }}'
+   with_items: tehpassword.stdout
+   register: rootpw
+
+ - name: show hosts with initial password
+   debug: msg="{{ inventory_hostname }}"
+
+ - name: generate random password
+   command: "openssl rand -base64 26"
+   register: random_pass
+
+ - name: hash the password
+   shell: "python -c \"import crypt; print crypt.crypt('{{ random_pass.stdout }}')\""
+   register: sha_hash
+
+ - name: change initial root password
+   user: name="root" password="{{ sha_hash.stdout }}" update_password="always"
+   ignore_errors: no
+
+ - name: store new password in file
+   lineinfile: 
+         dest: /var/log/change_root_pwds.log 
+         line: "root password run on {{ ansible_date_time.iso8601 }} for {{ inventory_hostname }}\n\n{{ random_pass.stdout }}\n\n"
+         create: yes
+         state: present
+   ignore_errors: no
+   delegate_to: 127.0.0.1
