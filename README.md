@@ -6,10 +6,14 @@ This role will reset root user on servers either using random password or one se
 
 The chosen password, and server hostname, will be written to localhost log file
 
+Message that password was reset will be sent to Slack
+
 Requirements
 ------------
 
 You must have Ansible 2.0 installed.
+
+You need a Slack server
 
 Examples
 --------
