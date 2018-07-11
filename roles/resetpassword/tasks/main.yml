@@ -52,12 +52,12 @@
 
 - name: slack notification
   tags: all
-  slack: token=TAV266ALW/BAV718YPR/qztkrd9fXQqLD9CLWmqrWsHx channel=#ansible msg='{{ ansible_env.SUDO_USER }} reset root password on {{ inventory_hostname }}' color=good
+  slack: token={{ SLACK_TOKEN }} channel=#ansible msg='{{ ansible_env.SUDO_USER }} reset root password on {{ inventory_hostname }}' color=good
          icon_url=http://media.linkonlineworld.com/img/Large/2014/11/9/2014_11_9_10_22_13_286.jpg
   when: ansible_env.SUDO_USER is defined
 
 - name: slack notification
   tags: all
-  slack: token=TAV266ALW/BAV718YPR/qztkrd9fXQqLD9CLWmqrWsHx channel=#ansible msg='{{ ansible_env.USER }} reset root password on {{ inventory_hostname }}' color=good
+  slack: token={{ SLACK_TOKEN }} channel=#ansible msg='{{ ansible_env.USER }} reset root password on {{ inventory_hostname }}' color=good
          icon_url=http://media.linkonlineworld.com/img/Large/2014/11/9/2014_11_9_10_22_13_286.jpg
   when: ansible_env.USER == 'root' and ansible_env.SUDO_USER is not defined
