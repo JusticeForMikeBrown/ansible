@@ -1,0 +1,63 @@
+
+- name: select random pw
+  command: "openssl rand -base64 26"
+  register: random_password
+  when: random is defined
+
+- name: hash random pw
+  shell: "python -c \"import crypt; print crypt.crypt('{{ random_password.stdout }}')\""
+  register: random_sha
+  delegate_to: 127.0.0.1
+  when: random is defined
+
+- debug: msg="{{ random_password.stdout }}"
+
+- name: hash defined pw
+  shell: "python -c \"import crypt; print crypt.crypt('{{ new_password }}')\""
+  register: defined_sha
+  delegate_to: 127.0.0.1
+  when: random is not defined
+
+- debug: msg="{{ random_sha }}"
+
+  #- debug: msg="{{ defined_sha }}"
+
+- name: change root password | defined
+  user: name=root password="{{ defined_sha.stdout }}" update_password="always"
+  ignore_errors: no
+  when: random is not defined
+
+- name: change root password | random
+  user: name=root password="{{ random_sha.stdout }}" update_password="always"
+  ignore_errors: no
+  when: random is defined
+
+- name: make sure pw_reset file exists
+  file: path=/tmp/pw_reset state=touch owner=root group=scuadmins mode=660
+  ignore_errors: no
+  delegate_to: 127.0.0.1
+  become: True
+
+- name: store password in file | random
+  shell: echo -e "Password reset for root on $(date)\n\n{{ inventory_hostname  }}\n\n{{ random_password.stdout }}\n\n" >> /tmp/pw_reset
+  ignore_errors: no
+  when: random is defined
+  delegate_to: 127.0.0.1
+
+- name: store password in file | defined
+  shell: echo -e "Password reset for root on $(date)\n\n{{ inventory_hostname  }}\n\n{{ new_password }}\n\n" >> /tmp/pw_reset
+  ignore_errors: no
+  when: random is not defined
+  delegate_to: 127.0.0.1
+
+- name: slack notification
+  tags: all
+  slack: token=TAV266ALW/BAV718YPR/qztkrd9fXQqLD9CLWmqrWsHx channel=#ansible msg='{{ ansible_env.SUDO_USER }} reset root password on {{ inventory_hostname }}' color=good
+         icon_url=http://media.linkonlineworld.com/img/Large/2014/11/9/2014_11_9_10_22_13_286.jpg
+  when: ansible_env.SUDO_USER is defined
+
+- name: slack notification
+  tags: all
+  slack: token=TAV266ALW/BAV718YPR/qztkrd9fXQqLD9CLWmqrWsHx channel=#ansible msg='{{ ansible_env.USER }} reset root password on {{ inventory_hostname }}' color=good
+         icon_url=http://media.linkonlineworld.com/img/Large/2014/11/9/2014_11_9_10_22_13_286.jpg
+  when: ansible_env.USER == 'root' and ansible_env.SUDO_USER is not defined
