@@ -18,15 +18,17 @@ You need a Slack server
 Examples
 --------
 
-If setting password
+If setting password:
 
+```
 ansible-playbook $ANSIBLE_HOME/utilities/reset_password.yml -e hosts=node113 --sudo -K "-e new_password=test12345"
+```
 
+If random password:
 
-If random password
-
+```
 ansible-playbook $ANSIBLE_HOME/utilities/reset_password.yml -e hosts=node113 --sudo -K "-e random=[]"
-
+```
 TODO
 --------------
 

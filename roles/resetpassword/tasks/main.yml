@@ -1,6 +1,6 @@
 
 - name: select random pw
-  command: "openssl rand -base64 26"
+  command: "openssl rand -base64 {{ length }}"
   register: random_password
   when: random is defined
 
@@ -10,7 +10,7 @@
   delegate_to: 127.0.0.1
   when: random is defined
 
-- debug: msg="{{ random_password.stdout }}"
+#- debug: msg="{{ random_password.stdout }}"
 
 - name: hash defined pw
   shell: "python -c \"import crypt; print crypt.crypt('{{ new_password }}')\""
@@ -18,7 +18,7 @@
   delegate_to: 127.0.0.1
   when: random is not defined
 
-- debug: msg="{{ random_sha }}"
+#- debug: msg="{{ random_sha }}"
 
   #- debug: msg="{{ defined_sha }}"
 
